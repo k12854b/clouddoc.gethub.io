@@ -1,0 +1,41 @@
+version: '4.31'
+
+services:
+    app:
+      container_name:build: ngnix
+      image: ngnix
+      build:
+      context: .
+    dockerfile: Dockerfile
+    restart: always
+    web:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - /usr/src/app
+    environment:
+      - NODE_ENV=development
+      - PGHOST=localhost
+      - PGUSER=postgres
+      - PGPASSWORD=1234
+      - PGDATABASE=CLOUD
+    depends_on:
+      - admiring_brattain
+    networks:
+      - Cloud
+
+CLOUD:
+    image: postgres:16
+environment:
+    POSTGRES_USER: postgres
+    POSTGRES_PASSWORD: 1234
+    POSTGRES_DB: CLOUD
+    volumes:
+      - db-data: D/
+networks:
+      - webnet
+  
+
+
+
