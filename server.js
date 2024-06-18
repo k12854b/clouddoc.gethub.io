@@ -6,19 +6,17 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const fs = require('fs');
 const login = require('./login');
+const { Pool } = require('pg');
 
 const app = express();
 const port = process.env.PORT || 3000;
-
-// Middleware to parse JSON
-app.use(bodyParser.json());
-
-// Serve static files from the 'cloud' directory
-app.use(express.static(path.join(__dirname, 'cloud')));
-// Serve static files from the 'Map CIVIL-PROTECTION' directory
-app.use(express.static(path.join(__dirname, 'Map CIVIL-PROTECTION')));
-// Serve static files from the 'Map SAMU-POLICE' directory
-app.use(express.static(path.join(__dirname, 'Map SAMU-POLICE')));
+const pool = new Pool({
+  user: process.env.DB_USER,
+  host: process.env.DB_HOST,
+  database: process.env.DB_NAME,
+  password: process.env.DB_PASSWORD,
+  port: process.env.DB_PORT,
+});
 
 // Route to serve the login page
 app.get('/', function(req, res) {
@@ -26,14 +24,28 @@ app.get('/', function(req, res) {
   fs.createReadStream('./login.html').pipe(res);
 });
 
-// Route to handle login validation
-app.post('/login', async (req, res) => {
-  const { username, password } = req.body;
+// Middleware to parse JSON
+app.use(bodyParser.json());
 
+// Function to validate user login and fetch the edge field
+async function validateLogin(username, password) {
   try {
-    const user = await login.validateLogin(username, password);
+    const query = 'SELECT * FROM login WHERE username = $1 AND password = $2';
+    const result = await pool.query(query, [username, password]);
 
-    if (user) {
+    if (result.rows.length > 0) {
+      return result.rows[0]; // Return the first matching user
+    } else {
+      return null;
+    }
+  } catch (err) {
+    console.error('Error validating login:', err);
+    throw err;
+  }
+}
+  try {
+
+    if (result) {
       const { edge } = user; // Get the 'edge' value from the user object
 
       if (edge === 'C1') {
@@ -52,19 +64,18 @@ app.post('/login', async (req, res) => {
     console.error('Error during login validation:', err);
     res.status(500).send('Server error');
   }
-});
 
 // Route to serve the interfaces
 app.get('/InterfaceCivilProtection.html', (req, res) => {
-  res.sendFile(path.join(__dirname, 'D:/Map CIVIL_PROTECTION/InterfaceCivilProtection.html'));
+  res.sendFile(path.join(__dirname, 'https://k12854b.github.io/edge1doc.gethub.io/InterfaceCivilProtection.html#14/36.5102/2.8834'));
 });
 
 app.get('/InterfacePolice.html', (req, res) => {
-  res.sendFile(path.join(__dirname, 'D:/Map SAMU-POLICE/InterfacePolice.html'));
+  res.sendFile(path.join(__dirname, 'https://k12854b.github.io/edge2doc.gethub.io/InterfacePolice.html#15/36.4995/2.8632'));
 });
 
 app.get('/InterfaceSAMU.html', (req, res) => {
-  res.sendFile(path.join(__dirname, 'D:/Map SAMU-POLICE/InterfaceSAMU.html'));
+  res.sendFile(path.join(__dirname, 'https://k12854b.github.io/edge2doc.gethub.io/InterfaceSAMU#15/36.4995/2.8632'));
 });
 
 // Start the server

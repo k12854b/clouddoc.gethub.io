@@ -2,8 +2,8 @@ version: '4.31'
 
 services:
     app:
-      container_name:build: ngnix
-      image: ngnix
+      container_name:build: admiring_brattain
+      image: docker.io/cloud/loginserver
       build:
       context: .
     dockerfile: Dockerfile
@@ -27,15 +27,14 @@ services:
 
 CLOUD:
     image: postgres:16
-environment:
+    environment:
     POSTGRES_USER: postgres
     POSTGRES_PASSWORD: 1234
     POSTGRES_DB: CLOUD
     volumes:
       - db-data: D/
 networks:
-      - webnet
-  
+    - webnet
 
 
 
