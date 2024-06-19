@@ -1,14 +1,19 @@
 version: '4.31'
 
 services:
-    app:
-      container_name:build: admiring_brattain
-      image: docker.io/cloud/loginserver
-      build:
+  app:
+    container_name: quirky_brown
+    image: docker.io/cloud/loginserver
+    build:
       context: .
-    dockerfile: Dockerfile
+      dockerfile: Dockerfile
     restart: always
-    web:
+    depends_on:
+      - cloud
+    networks:
+      - cloud_network
+
+  web:
     build: .
     ports:
       - "3000:3000"
@@ -16,25 +21,25 @@ services:
       - /usr/src/app
     environment:
       - NODE_ENV=development
-      - PGHOST=localhost
+      - PGHOST=cloud
       - PGUSER=postgres
       - PGPASSWORD=1234
       - PGDATABASE=CLOUD
     depends_on:
-      - admiring_brattain
+      - cloud
     networks:
-      - Cloud
 
-CLOUD:
+  cloud:
     image: postgres:16
     environment:
-    POSTGRES_USER: postgres
-    POSTGRES_PASSWORD: 1234
-    POSTGRES_DB: CLOUD
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: CLOUD
     volumes:
-      - db-data: D/
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - cloud_network
+
 networks:
-    - webnet
-
-
-
+  my_macvlan_network:
+    external: true
